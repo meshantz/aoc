@@ -14,7 +14,8 @@ def load_cookie(cookie: str) -> str:
 
 def main():
     now = datetime.datetime.now()
-    now = datetime.datetime(2022, 12, 5)
+    # just uncomment this with a different date to pick out one you missed.
+    # now = datetime.datetime(2022, 12, 5)
 
     data_path = Path(f"data/{now.year}/day{now.strftime("%d")}.txt")
     problem_path = Path(f"aoc{now.year}/day{now.strftime("%d")}.py")
