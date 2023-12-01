@@ -55,3 +55,24 @@ def solution():
 
     answer2 = part2(formatted_data)
     print(f"Part 2: {answer2}")
+
+
+def test():
+    test1 = """1abc2
+pqr3stu8vwx
+a1b2c3d4e5f
+treb7uchet"""
+    answer1 = part1(parse(test1))
+    print(f"Part 1: {answer1}")
+    assert answer1 == 142
+
+    test2 = """two1nine
+eightwothree
+abcone2threexyz
+xtwone3four
+4nineeightseven2
+zoneight234
+7pqrstsixteen"""
+    answer2 = part2(parse(test2))
+    print(f"Part 2: {answer2}")
+    assert answer2 == 281
