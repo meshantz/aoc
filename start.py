@@ -1,6 +1,7 @@
 import datetime
-from pathlib import Path
 import os
+import sys
+from pathlib import Path
 
 import requests
 
@@ -22,6 +23,10 @@ def main():
     input_path = f"https://adventofcode.com/{now.year}/day/{now.day}/input"
     response = requests.get(input_path, cookies={"session": load_cookie("session")})
     assert response.status_code == 200, f"Got unexpected response status: {response.status_code}"
+
+    if os.path.exists(problem_path) or os.path.exists(data_path):
+        print(f"ERROR: December {now.day}, {now.year} already started", file=sys.stderr)
+        sys.exit(1)
 
     os.makedirs(data_path.parent, exist_ok=True)
     with open(data_path, "w") as fp:
