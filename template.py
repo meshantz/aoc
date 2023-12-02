@@ -38,10 +38,10 @@ def solution():
 def test():
     test1 = """paste-here"""
     answer1 = part1(common.parse(test1, common.WholeLine))
-    print(f"Part 1: {answer1}")
+    print(f"Part 1: {{answer1}}")
     # assert answer1 == ???
 
     test2 = """paste-here"""
     answer2 = part2(common.parse(test2, common.WholeLine))
-    print(f"Part 2: {answer2}")
+    print(f"Part 2: {{answer2}}")
     # assert answer2 == ???
