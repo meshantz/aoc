@@ -1,6 +1,4 @@
-from utils import load
-import typing as t
-from dataclasses import dataclass
+import utils
 
 
 digits_as_words = {
@@ -16,36 +14,6 @@ digits_as_words = {
 }
 
 
-class LineConsumer(t.Protocol):
-    @classmethod
-    def from_lines(cls: t.Type[t.Self], x: t.Iterator[str]) -> t.Self:
-        ...
-
-
-T = t.TypeVar("T", bound=LineConsumer)
-
-
-@dataclass
-class WholeLine(LineConsumer):
-    data: str
-
-    @classmethod
-    def from_lines(cls: t.Type[t.Self], data_iter: t.Iterator[str]) -> t.Self:
-        return cls(next(data_iter))
-
-
-def parse(raw_data: str, factory: t.Type[T]) -> list[T]:
-    lines_iter = iter(raw_data.splitlines())
-    parsed = []
-    while True:
-        try:
-            parsed.append(factory.from_lines(lines_iter))
-        except StopIteration:
-            break
-
-    return parsed
-
-
 def make_digits(row: str, index: int) -> int:
     if row[index].isdigit():
         return int(row[index])
@@ -57,7 +25,7 @@ def make_digits(row: str, index: int) -> int:
     return 0
 
 
-def part1(data: list[WholeLine]):
+def part1(data: list[utils.WholeLine]):
     sum = 0
     for row in data:
         numbers = [c for c in row.data if c.isdigit()]
@@ -66,7 +34,7 @@ def part1(data: list[WholeLine]):
     return sum
 
 
-def part2(data: list[WholeLine]):
+def part2(data: list[utils.WholeLine]):
     sum = 0
     for row in data:
         numbers = [processed for i in range(len(row.data)) if (processed := make_digits(row.data, i))]
@@ -76,8 +44,8 @@ def part2(data: list[WholeLine]):
 
 
 def solution():
-    raw_data = load("data/2023/day01.txt")
-    formatted_data = parse(raw_data, WholeLine)
+    raw_data = utils.load("data/2023/day01.txt")
+    formatted_data = utils.parse(raw_data, utils.WholeLine)
 
     answer1 = part1(formatted_data)
     print(f"Part 1: {answer1}")
@@ -91,7 +59,7 @@ def test():
 pqr3stu8vwx
 a1b2c3d4e5f
 treb7uchet"""
-    answer1 = part1(parse(test1, WholeLine))
+    answer1 = part1(utils.parse(test1, utils.WholeLine))
     print(f"Part 1: {answer1}")
     assert answer1 == 142
 
@@ -102,6 +70,6 @@ xtwone3four
 4nineeightseven2
 zoneight234
 7pqrstsixteen"""
-    answer2 = part2(parse(test2, WholeLine))
+    answer2 = part2(utils.parse(test2, utils.WholeLine))
     print(f"Part 2: {answer2}")
     assert answer2 == 281
