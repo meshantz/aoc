@@ -5,7 +5,7 @@ from pathlib import Path
 
 class LineConsumer(t.Protocol):
     @classmethod
-    def from_lines(cls: t.Type[t.Self], x: t.Iterator[str]) -> t.Self:
+    def from_lines(cls: t.Type[t.Self], data_iter: t.Iterator[str]) -> t.Self:
         ...
 
 
