@@ -1,4 +1,4 @@
-from utils import load
+from common import load
 
 
 def parse(raw_data):

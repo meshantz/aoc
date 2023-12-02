@@ -1,4 +1,4 @@
-import utils
+import common
 
 
 digits_as_words = {
@@ -25,7 +25,7 @@ def make_digits(row: str, index: int) -> int:
     return 0
 
 
-def part1(data: list[utils.WholeLine]):
+def part1(data: list[common.WholeLine]):
     sum = 0
     for row in data:
         numbers = [c for c in row.data if c.isdigit()]
@@ -34,7 +34,7 @@ def part1(data: list[utils.WholeLine]):
     return sum
 
 
-def part2(data: list[utils.WholeLine]):
+def part2(data: list[common.WholeLine]):
     sum = 0
     for row in data:
         numbers = [processed for i in range(len(row.data)) if (processed := make_digits(row.data, i))]
@@ -44,8 +44,8 @@ def part2(data: list[utils.WholeLine]):
 
 
 def solution():
-    raw_data = utils.load("data/2023/day01.txt")
-    formatted_data = utils.parse(raw_data, utils.WholeLine)
+    raw_data = common.load("data/2023/day01.txt")
+    formatted_data = common.parse(raw_data, common.WholeLine)
 
     answer1 = part1(formatted_data)
     print(f"Part 1: {answer1}")
@@ -59,7 +59,7 @@ def test():
 pqr3stu8vwx
 a1b2c3d4e5f
 treb7uchet"""
-    answer1 = part1(utils.parse(test1, utils.WholeLine))
+    answer1 = part1(common.parse(test1, common.WholeLine))
     print(f"Part 1: {answer1}")
     assert answer1 == 142
 
@@ -70,6 +70,6 @@ xtwone3four
 4nineeightseven2
 zoneight234
 7pqrstsixteen"""
-    answer2 = part2(utils.parse(test2, utils.WholeLine))
+    answer2 = part2(common.parse(test2, common.WholeLine))
     print(f"Part 2: {answer2}")
     assert answer2 == 281

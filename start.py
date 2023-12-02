@@ -5,7 +5,7 @@ from pathlib import Path
 
 import requests
 
-from utils import load
+from common import load
 
 
 def load_cookie(cookie: str) -> str:
