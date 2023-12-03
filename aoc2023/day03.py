@@ -169,7 +169,6 @@ def test():
     print(f"Part 1: {answer1}")
     assert answer1 == 4361
 
-    test2 = """paste-here"""
     answer2 = part2(common.parse_all(test1, Schematic))
     print(f"Part 2: {answer2}")
-    # assert answer2 == ???
+    assert answer2 == 467835
