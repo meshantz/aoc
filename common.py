@@ -33,6 +33,11 @@ def parse(raw_data: str, factory: t.Type[T]) -> list[T]:
     return parsed
 
 
+def parse_all(raw_data: str, factory: t.Type[T]) -> T:
+    lines_iter = iter(raw_data.splitlines())
+    return factory.from_lines(lines_iter)
+
+
 def load(filename: str | Path) -> str:
     with open(filename) as fp:
         raw = fp.read()
