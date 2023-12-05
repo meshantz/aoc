@@ -37,12 +37,27 @@ def find_dest(val: int, a: Almanac) -> int:
     return val
 
 
+def find_source(val: int, a: Almanac) -> int:
+    assert a.mappings is not None
+    for dest_start, src_start, count in a.mappings:
+        if val >= dest_start and val < dest_start + count:
+            offset = val - dest_start
+            return src_start + offset
+    return val
+
+
 def in_next(value: int, source: str, dest_by_source: dict[str, Almanac]):
     dest = dest_by_source[source]
     return find_dest(value, dest), dest.destination
 
 
-def find_location(dest_by_source, val):
+def in_prev(value: int, dest: str, source_by_dest: dict[str, Almanac]):
+    source = source_by_dest[dest]
+    assert source.source is not None
+    return find_source(value, source), source.source
+
+
+def find_location(dest_by_source: dict[str, Almanac], val: int):
     source = "seed"
     while source != "location":
         # print(f"{source.capitalize()} {val}", end=", ")
@@ -51,9 +66,24 @@ def find_location(dest_by_source, val):
     return val
 
 
-def get_locations(seeds, dest_by_source):
+def location_has_seed(source_by_dest: dict[str, Almanac], val: int):
+    dest = "location"
+    while dest != "seed":
+        val, dest = in_prev(val, dest, source_by_dest)
+    return val
+
+
+def get_locations(seeds: list[int], dest_by_source: dict[str, Almanac]):
     for val in seeds:
         yield find_location(dest_by_source, val)
+
+
+def has_seed(seeds: Almanac, seed):
+    assert seeds.seeds is not None
+    for start, count in itertools.batched(seeds.seeds, 2):
+        if seed >= start and seed < start + count:
+            return True
+    return False
 
 
 def part1(data: list[Almanac]):
@@ -63,21 +93,19 @@ def part1(data: list[Almanac]):
     return min(get_locations(seeds.seeds, dest_by_source))
 
 
-def seeder(seeds):
-    for start, count in itertools.batched(seeds.seeds, 2):
-        for i in range(count):
-            yield start + i
-
-
 def part2(data: list[Almanac]):
     seeds, *mappings = data
-    dest_by_source = {m.source: m for m in mappings if m.source is not None}
+    source_by_dest = {m.destination: m for m in mappings if m.source is not None}
     assert seeds.seeds is not None
-    closest = 99999999999999999
-    for seed in seeder(seeds):
-        closest = min(closest, find_location(dest_by_source, seed))
-
-    return closest
+    location = 0
+    bail_out = 993500720
+    while True:
+        possible_seed = location_has_seed(source_by_dest, location)
+        if has_seed(seeds, possible_seed):
+            return location
+        location += 1
+        if location > bail_out:
+            raise Exception("Something went wrong, because the first part had a seed here!")
 
 
 def solution():
