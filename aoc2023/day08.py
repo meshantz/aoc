@@ -1,5 +1,3 @@
-import collections
-import math
 import typing as t
 from dataclasses import dataclass
 
@@ -46,41 +44,6 @@ def traverse(start: str, ends: set[str], dir_steps: str, nodes: dict[str, Node])
     return steps
 
 
-def factorize(val: int) -> list[int]:
-    """Expanded prime factors of val as a list. ie 8 => [2, 2, 2]"""
-    if val == 1:
-        return [val]
-
-    result = []
-    n = 2
-    cur = val
-    limit = val / 2 + 1
-    limit = math.sqrt(val) + 1
-    while n < limit:
-        if cur % n == 0:
-            result.append(n)
-            cur = cur // n
-        else:
-            n += 1
-
-    if cur != 1:
-        result.append(cur)
-
-    return result
-
-
-def lcm(factors: list[int]) -> int:
-    """Least Common Multiple of all numbers in factors list"""
-    all_powers = {}
-    for f in factors:
-        ff = factorize(f)
-        powers = collections.Counter(ff)
-        for factor, exponent in powers.items():
-            val = max(all_powers.setdefault(factor, 0), exponent)
-            all_powers[factor] = val
-    return math.prod(f**e for f, e in all_powers.items())
-
-
 def part1(data: list[common.WholeLine]):
     dir_steps = data[0].data
     nodes = [Node.make(line.data) for line in data[2:]]
@@ -97,7 +60,7 @@ def part2(data: list[common.WholeLine]):
     nodes = {n.name: n for n in nodes}
 
     factors = [traverse(s, ends, dir_steps, nodes) for s in starts]
-    return lcm(factors)
+    return common.lcm(factors)
 
 
 def solution():
