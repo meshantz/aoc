@@ -48,6 +48,30 @@ def find_reflection(pattern: list[str]):
     return False
 
 
+def find_smudgy_reflection(pattern: list[str]):
+    from_stack = list(pattern)  # don't mess with the original list
+    to_stack: list[str] = []
+    seam = 0
+
+    while from_stack:
+        seam += 1
+        to_stack.insert(0, from_stack.pop(0))
+        # print_side_by_side(from_stack, to_stack)
+        # any one row has exactly 1 difference
+        diffs: list[int] = []
+        for a, b in zip(from_stack, to_stack):
+            diffs.append(sum(c1 != c2 for c1, c2 in zip(a, b)))
+        if sum(diffs) == 1:
+            break
+
+    if seam != len(pattern):
+        # print(f"Seam at {seam}")
+        return seam
+
+    # print("No seam")
+    return False
+
+
 def part1(data: list[Pattern]):
     horizontals: list[int] = []
     verticals: list[int] = []
@@ -63,7 +87,17 @@ def part1(data: list[Pattern]):
 
 
 def part2(data: list[Pattern]):
-    return 0
+    horizontals: list[int] = []
+    verticals: list[int] = []
+
+    for d in data:
+        if (seam := find_smudgy_reflection(d.data)) is not False:
+            horizontals.append(seam)
+        elif (seam := find_smudgy_reflection(d.transposed)) is not False:
+            verticals.append(seam)
+
+    # print(horizontals, verticals)
+    return sum(horizontals) * 100 + sum(verticals)
 
 
 def solution():
