@@ -38,7 +38,7 @@ class Vector3:
         return Vector2(self.x, self.y)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Brick(common.LineConsumer):
     # this is exactly the same as common.WholeLine, so remove it or modify it to suit the problem
     # or see other common.LineConsumer derivatives
@@ -100,19 +100,37 @@ def part1(data: list[Brick]):
     min_x, min_y, max_x, max_y = get_horizontal_extents(bricks)
     tops = {Vector2(a, b): 0 for a in range(min_x, max_x + 1) for b in range(min_y, max_y + 1)}
     placed: list[Brick] = []
+    rests_on: dict[Brick, set[Brick]] = {}
+    is_under: dict[Brick, set[Brick]] = {}
+    matrix: dict[Vector3, Brick] = {}
 
     print(min_x, min_y, max_x, max_y)
     print(len(tops))
+    down_vector = Vector3(0, 0, -1)
     for brick in bricks:
         can_drop_to = max(tops[point] for point in brick.covers()) + 1
         for point in brick.covers():
             tops[point] = can_drop_to
-        placed.append(brick.reposition(can_drop_to))
+        new_brick = brick.reposition(can_drop_to)
+        placed.append(new_brick)
+        rests_on[new_brick] = set()
+        is_under[new_brick] = set()
+        for point in new_brick.covers():
+            p = Vector3(point.x, point.y, can_drop_to)
+            if brick_below := matrix.get(p + down_vector):
+                rests_on[new_brick].add(brick_below)
+                is_under[brick_below].add(new_brick)
+            matrix[p] = new_brick
 
-    for brick in placed:
-        print(brick)
+    must_keep: set[Brick] = set()
+    for brick, under in rests_on.items():
+        print(brick, under)
+        # TODO: this probably needs to check all the way down the chain?
+        if len(under) == 1:
+            must_keep.update(under)
+    # print(must_keep)
 
-    return 0
+    return len(bricks) - len(must_keep)
 
 
 def part2(data: list[Brick]):
