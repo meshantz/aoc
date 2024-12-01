@@ -17,7 +17,7 @@ class CustomParseable(common.LineConsumer):
         return cls(line)
 
 
-def make_lists(data: list[common.WholeLine]) -> tuple[list[int], list[int]]:
+def make_lists(data: t.Iterable[common.WholeLine]) -> tuple[list[int], list[int]]:
     left, right = [], []
     for line in data:
         a, b = line.data.split()
@@ -27,11 +27,11 @@ def make_lists(data: list[common.WholeLine]) -> tuple[list[int], list[int]]:
     return left, right
 
 
-def part1(left: list[int], right: list[int]):
+def part1(left: t.Iterable[int], right: t.Iterable[int]):
     return sum(abs(y - x) for x, y in zip(sorted(left), sorted(right)))
 
 
-def part2(left: list[int], right: list[int]):
+def part2(left: t.Iterable[int], right: t.Iterable[int]):
     counter = Counter(right)
     return sum(i * counter[i] for i in left)
 

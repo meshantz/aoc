@@ -16,11 +16,11 @@ class CustomParseable(common.LineConsumer):
         return cls(line)
 
 
-def part1(data: list[common.WholeLine]):
+def part1(data: t.Iterable[common.WholeLine]):
     return 0
 
 
-def part2(data: list[common.WholeLine]):
+def part2(data: t.Iterable[common.WholeLine]):
     return 0
 
 
