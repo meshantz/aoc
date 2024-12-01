@@ -1,20 +1,7 @@
 import typing as t
 from collections import Counter
-from dataclasses import dataclass
 
 import common
-
-
-@dataclass
-class CustomParseable(common.LineConsumer):
-    # this is exactly the same as common.WholeLine, so remove it or modify it to suit the problem
-    # or see other common.LineConsumer derivatives
-    data: str
-
-    @classmethod
-    def from_lines(cls: type[t.Self], data_iter: t.Iterator[str]) -> t.Self:
-        line = next(data_iter)
-        return cls(line)
 
 
 def make_lists(data: t.Iterable[common.WholeLine]) -> tuple[list[int], list[int]]:
