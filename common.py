@@ -1,14 +1,15 @@
 import collections
+import contextlib
 import math
 import typing as t
 from dataclasses import dataclass
+from dataclasses import field
 from pathlib import Path
 
 
 class LineConsumer(t.Protocol):
     @classmethod
-    def from_lines(cls: t.Type[t.Self], data_iter: t.Iterator[str]) -> t.Self:
-        ...
+    def from_lines(cls: t.Type[t.Self], data_iter: t.Iterator[str]) -> t.Self: ...
 
 
 T = t.TypeVar("T", bound=LineConsumer)
@@ -16,11 +17,31 @@ T = t.TypeVar("T", bound=LineConsumer)
 
 @dataclass
 class WholeLine(LineConsumer):
+    """A single line, with a single data member containing the whole string."""
+
     data: str
 
     @classmethod
     def from_lines(cls: t.Type[t.Self], data_iter: t.Iterator[str]) -> t.Self:
         return cls(next(data_iter))
+
+
+@dataclass
+class WholeFile(LineConsumer):
+    """The full data file, with a single list member that contains every line of the file."""
+
+    lines: list[str] = field(default_factory=list)
+
+    @classmethod
+    def from_lines(cls: type[t.Self], data_iter: t.Iterator[str]) -> t.Self:
+        this_file = cls()
+        row = 0
+        with contextlib.suppress(StopIteration):
+            while line := next(data_iter):
+                this_file.lines.append(line)
+                row += 1
+
+        return this_file
 
 
 def parse(raw_data: str, factory: t.Type[T]) -> list[T]:

@@ -1,5 +1,7 @@
+import contextlib
 import typing as t
 from dataclasses import dataclass
+from dataclasses import field
 
 import common
 
@@ -16,6 +18,30 @@ class CustomParseable(common.LineConsumer):
         return cls(line)
 
 
+@dataclass
+class CustomWholeFile(common.LineConsumer):
+    """The full data file, with a single list member that contains every line of the file."""
+
+    # for use with common.parse_all
+
+    # this is pretty much the same as common.WholeFile, so remove it or modify it to suit the problem
+    # or see other common.LineConsumer derivatives
+
+    lines: list[str] = field(default_factory=list)
+
+    @classmethod
+    def from_lines(cls: type[t.Self], data_iter: t.Iterator[str]) -> t.Self:
+        # this is implemented overly verbosely to facilitate customization.
+        this_file = cls()
+        row = 0
+        with contextlib.suppress(StopIteration):
+            while line := next(data_iter):
+                this_file.lines.append(line)
+                row += 1
+
+        return this_file
+
+
 def part1(data: t.Iterable[common.WholeLine]):
     return 0
 
@@ -26,6 +52,7 @@ def part2(data: t.Iterable[common.WholeLine]):
 
 def solution():
     raw_data = common.load("data/{year}/day{day:02}.txt")
+    # See also `common.pares_all` for more complicated inputs
     formatted_data = common.parse(raw_data, common.WholeLine)
 
     answer1 = part1(formatted_data)
