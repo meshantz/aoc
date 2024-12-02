@@ -1,4 +1,5 @@
 import typing as t
+import math
 from collections import Counter
 from dataclasses import dataclass
 
@@ -39,57 +40,57 @@ class Report(common.LineConsumer):
 
 
 def dumb_guard(v: int) -> t.TypeGuard[t.Literal[-1, 0, 1]]:
-    return v in {1, -1, 0}
+    return v in {-1, 0, 1}
 
 
-@dataclass
-class ReportWithDampener(common.LineConsumer):
-    # this is exactly the same as common.WholeLine, so remove it or modify it to suit the problem
-    # or see other common.LineConsumer derivatives
-    levels: t.List[int]
-    deltas: t.List[int]
-    direction: t.Literal[-1, 0, 1]
-    max_delta: int
+def make_direction(a: int, b: int) -> t.Literal[-1, 0, 1]:
+    delta = b - a
+    if delta == 0:
+        return 0
+    else:
+        direction = int(delta / abs(delta))
+        assert dumb_guard(direction)
+        return direction
 
-    @classmethod
-    def from_lines(cls: type[t.Self], data_iter: t.Iterator[str]) -> t.Self:
-        line = next(data_iter)
-        levels = [int(i) for i in line.split()]
-        deltas = []
-        max_delta = 0
-        dampener_used = False
-        directions: list[t.Literal[-1, 0, 1]] = []
 
-        for i, lvl in enumerate(levels[:-1]):
-            delta = levels[i + 1] - lvl
-            if delta == 0:
-                direction = 0
-            else:
-                direction = int(delta / abs(delta))
-            assert dumb_guard(direction)
-            directions.append(direction)
-            if delta < 1 and delta > 3 and not dampener_used:
-                delta = 1
-                dampener_used = True
-            max_delta = max(abs(delta), max_delta)
+def is_valid(report: t.Sequence[int], dampener=False) -> bool:
+    directions: list[t.Literal[-1, 0, 1]] = [make_direction(a, b) for a, b in zip(report[:-1], report[1:])]
+    dir_counts = Counter(directions)
+    asc = dir_counts[1]
+    dsc = dir_counts[-1]
+    prevailing_direction = -1 if dsc > asc else 1
 
-        dir_counts = Counter(directions)
-        asc = dir_counts[1]
-        dsc = dir_counts[-1]
-        prevailing_direction = -1 if dsc > asc else 1
+    for i, (a, b) in enumerate(zip(report[:-1], report[1:])):
+        delta = b - a
 
-        faults = 0
-        for direction in directions:
-            if direction == 0 or direction != prevailing_direction:
-                faults += 1
+        # check for no increase or decrease
+        if delta == 0 and dampener is False:
+            # remove a or b and try again
+            return is_valid(list(report[:i]) + list(report[i + 1 :]), True) or is_valid(
+                list(report[: i + 1]) + list(report[i + 2 :]), True
+            )
+        elif delta == 0:
+            return False
 
-        if faults > int(dampener_used):
-            direction = 0
-        else:
-            # print(faults, dampener_used)
-            direction = prevailing_direction
+        # check for correct direction
+        if math.copysign(delta, prevailing_direction) != delta and dampener is False:
+            # remove a or b and try again
+            return is_valid(list(report[:i]) + list(report[i + 1 :]), True) or is_valid(
+                list(report[: i + 1]) + list(report[i + 2 :]), True
+            )
+        elif math.copysign(delta, prevailing_direction) != delta:
+            return False
 
-        return cls(levels, deltas, direction, max_delta)
+        # check for maximum differnece
+        if abs(delta) > 3 and dampener is False:
+            # remove a or b and try again
+            return is_valid(list(report[:i]) + list(report[i + 1 :]), True) or is_valid(
+                list(report[: i + 1]) + list(report[i + 2 :]), True
+            )
+        elif abs(delta) > 3:
+            return False
+
+    return True
 
 
 def part1(reports: t.Iterable[Report]):
@@ -97,8 +98,8 @@ def part1(reports: t.Iterable[Report]):
     return len(valid)
 
 
-def part2(reports: t.Iterable[ReportWithDampener]):
-    valid = [r for r in reports if r.direction != 0 and r.max_delta <= 3]
+def part2(reports: t.Iterable[Report]):
+    valid = [r for r in reports if is_valid(r.levels)]
     return len(valid)
 
 
@@ -110,7 +111,7 @@ def solution():
     answer1 = part1(formatted_data)
     print(f"Part 1: {answer1}")
 
-    formatted_data = common.parse(raw_data, ReportWithDampener)
+    formatted_data = common.parse(raw_data, Report)
 
     answer2 = part2(formatted_data)
     print(f"Part 2: {answer2}")
@@ -129,6 +130,6 @@ def test():
     # assert answer1 == ???
 
     test2 = test1
-    answer2 = part2(common.parse(test2, ReportWithDampener))
+    answer2 = part2(common.parse(test2, Report))
     print(f"Part 2: {answer2}")
     # assert answer2 == ???
