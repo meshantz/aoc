@@ -59,6 +59,9 @@ class Grid:
     def add(self, pos: Coordinate, cell: Cell):
         self.grid[pos] = cell
 
+    def remove(self, pos: Coordinate) -> Cell | None:
+        return self.grid.pop(pos, None)
+
     def get(self, pos: Coordinate) -> Cell | None:
         return self.grid.get(pos)
 
@@ -96,8 +99,8 @@ def try_move(pos: Coordinate, direction: Coordinate, obstacles: Grid):
         return new_pos
 
 
-def part1(data: SecurityGuard):
-    cardinals = cycle(
+def get_cardinals():
+    yield from cycle(
         [
             Coordinate(0, -1),
             Coordinate(1, 0),
@@ -106,6 +109,9 @@ def part1(data: SecurityGuard):
         ]
     )
 
+
+def part1(data: SecurityGuard):
+    cardinals = get_cardinals()
     facing = next(cardinals)
     current = data.guard_position
     visit: dict[Coordinate, int] = {}
@@ -114,16 +120,75 @@ def part1(data: SecurityGuard):
         visit.setdefault(current, 0)
         visit[current] += 1
         next_pos = try_move(current, facing, data.obstacles)
+        i = 0
         while next_pos is None:
+            i += 1
             facing = next(cardinals)
             next_pos = try_move(current, facing, data.obstacles)
+        if i > 1:
+            print(f"Turned: {i}")
         current = next_pos
 
     return len(visit)
 
 
+def does_it_loop(
+    facing: Coordinate,
+    start: Coordinate,
+    been_there: t.Mapping[Coordinate, t.Iterable[Coordinate]],
+    obstacles: Grid,
+    extents: Coordinate,
+):
+    cardinals = get_cardinals()
+    while next(cardinals) != facing:
+        pass
+
+    visit: dict[Coordinate, t.Set[Coordinate]] = {}
+    for k, v in been_there.items():
+        visit[k] = {d for d in v}
+
+    current = start
+    while not leaves(current, extents):
+        visit.setdefault(current, set()).add(facing)
+        next_pos = try_move(current, facing, obstacles)
+
+        while next_pos is None:
+            facing = next(cardinals)
+            next_pos = try_move(current, facing, obstacles)
+
+        if facing in visit.get(next_pos, set()):
+            return True
+        current = next_pos
+
+    return False
+
+
 def part2(data: SecurityGuard):
-    return 0
+    cardinals = get_cardinals()
+    facing = next(cardinals)
+
+    current = data.guard_position
+    visit: dict[Coordinate, t.Set[Coordinate]] = {}
+    placeholder = Cell("O")
+    loop_obstacle_positions = set()
+
+    while not leaves(current, data.extents):
+        visit.setdefault(current, set()).add(facing)
+        next_pos = try_move(current, facing, data.obstacles)
+        while next_pos is None:
+            facing = next(cardinals)
+            next_pos = try_move(current, facing, data.obstacles)
+
+        if next_pos != data.guard_position and next_pos not in visit:
+            # pretend there's an obstacle here instead.
+            data.obstacles.add(next_pos, placeholder)
+            if does_it_loop(facing, current, visit, data.obstacles, data.extents):
+                loop_obstacle_positions.add(next_pos)
+            data.obstacles.remove(next_pos)
+
+        current = next_pos
+
+    return len(loop_obstacle_positions)
 
 
 def solution():
