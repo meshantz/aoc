@@ -82,6 +82,9 @@ def calculate(node: Node, operands: t.Sequence, test: int, index: int = 0, acc: 
         # print(acc, "==", test)
         return int(acc == test)
 
+    if acc > test:
+        return 0
+
     total = 0
     for child in node.children:
         total += calculate(child, operands, test, index + 1, acc)
