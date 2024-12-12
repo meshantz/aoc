@@ -53,7 +53,6 @@ def blink(stones: Stones):
         if stone.value == 0:
             stone.value = 1
         elif len(val_str := str(stone.value)) % 2 == 0:
-            pass
             center = len(val_str) // 2
             n1 = Node(int(val_str[:center]))
             n2 = Node(int(val_str[center:]))
