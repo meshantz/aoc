@@ -1,8 +1,7 @@
 from __future__ import annotations
-import contextlib
 import typing as t
 from dataclasses import dataclass
-from dataclasses import field
+from collections import Counter
 
 import common
 
@@ -12,14 +11,17 @@ class Stones(common.LineConsumer):
     head: Node
     tail: Node
     count: int
+    stones: list[int]
 
     @classmethod
     def from_lines(cls: type[t.Self], data_iter: t.Iterator[str]) -> t.Self:
         line = next(data_iter)
         head = tail = None
         count = 0
+        stones = []
         for stone in line.split():
             val = int(stone)
+            stones.append(val)
             node = Node(val)
             node.left = tail
             if tail:
@@ -31,7 +33,7 @@ class Stones(common.LineConsumer):
 
         if head is None or tail is None:
             raise Exception("Unexpected input!")
-        return cls(head, tail, count)
+        return cls(head, tail, count, stones)
 
     def __iter__(self):
         cur = self.head
@@ -48,14 +50,26 @@ class Node:
     right: Node | None = None
 
 
+def blink_one(stone: int) -> tuple[int, int | None]:
+    if stone == 0:
+        return 1, None
+    elif len(val_str := str(stone)) % 2 == 0:
+        center = len(val_str) // 2
+        left = int(val_str[:center])
+        right = int(val_str[center:])
+        return left, right
+    else:
+        return stone * 2024, None
+
+
 def blink(stones: Stones):
     for stone in stones:
-        if stone.value == 0:
-            stone.value = 1
-        elif len(val_str := str(stone.value)) % 2 == 0:
-            center = len(val_str) // 2
-            n1 = Node(int(val_str[:center]))
-            n2 = Node(int(val_str[center:]))
+        left, right = blink_one(stone.value)
+        if right is None:
+            stone.value = left
+        else:
+            n1 = Node(left)
+            n2 = Node(right)
             n1.left = stone.left
             n1.right = n2
             n2.left = n1
@@ -69,8 +83,6 @@ def blink(stones: Stones):
             if stone.right:
                 stone.right.left = n2
             stones.count += 1
-        else:
-            stone.value *= 2024
 
 
 def print_stones(s: Stones):
@@ -87,8 +99,29 @@ def part1(data: Stones):
     return data.count
 
 
-def part2(data: Stones):
-    return 0
+def part2(data: Stones, target=75):
+    # print(data.stones)
+    step = 0
+    current = dict(Counter(data.stones))
+    next_ = {}
+    # print(current)
+    while step < target:
+        for val, count in current.items():
+            if not count:
+                continue
+            left, right = blink_one(val)
+            next_.setdefault(left, 0)
+            next_[left] += count
+            if right is not None:
+                next_.setdefault(right, 0)
+                next_[right] += count
+
+        current, next_ = next_, current
+        next_.clear()
+        step += 1
+        # print(current)
+
+    return sum(i for i in current.values())
 
 
 def solution():
