@@ -69,17 +69,34 @@ def quadrant(pos: Coordinate, extents: Coordinate):
         return 4
 
 
-def part1(data: t.Iterable[Robot], extents=Coordinate(101, 103), seconds: int = 100):
-    current: dict[Coordinate, list[Robot]] = {}
-    for r in data:
-        current.setdefault(r.position, []).append(r)
-
-    # seconds = 5
+def calc_seconds(data: t.Iterable[Robot], extents: Coordinate, seconds: int):
     final: dict[Coordinate, list[Robot]] = {}
     for r in data:
         result = (r.position + (r.velocity * seconds)) % extents
         final.setdefault(result, []).append(r)
+    return final
 
+
+def cog(coords: t.Sequence[Coordinate]) -> Coordinate:
+    total = Coordinate(0, 0)
+    for c in coords:
+        total += c
+    num_coords = len(coords)
+    return Coordinate(total.x // num_coords, total.y // num_coords)
+
+
+def manhattan(a: Coordinate, b: Coordinate) -> int:
+    c = a - b
+    return abs(c.x) + abs(c.y)
+
+
+def avg_dist(coords: t.Sequence[Coordinate], center: Coordinate) -> float:
+    return sum(manhattan(c, center) for c in coords) / len(coords)
+
+
+def part1(data: t.Iterable[Robot], extents=Coordinate(101, 103), seconds: int = 100):
+    # seconds = 5
+    final = calc_seconds(data, extents, seconds)
     show_grid(final, extents)
     # print(quadrant(Coordinate(6, 3), extents))
 
@@ -93,7 +110,22 @@ def part1(data: t.Iterable[Robot], extents=Coordinate(101, 103), seconds: int = 
 
 
 def part2(data: t.Iterable[Robot], extents=Coordinate(101, 103)):
-    return 0
+    min_avg = 9999999
+    smallest_avg_second = 0
+    for seconds in range(1, 10000):
+        current = calc_seconds(data, extents, seconds)
+        coords = list(current.keys())
+        curr_cog = cog(coords)
+        avg = avg_dist(coords, curr_cog)
+        min_avg = min(min_avg, avg)
+        if min_avg == avg:
+            smallest_avg_second = seconds
+            print("average got smaller at", seconds, curr_cog, avg)
+        if avg < 25.5:
+            show_grid(current, extents)
+
+    # this may not be right, you'll have to scan the output to see if there was more than one
+    return smallest_avg_second
 
 
 def solution():
